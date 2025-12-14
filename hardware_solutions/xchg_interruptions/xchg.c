@@ -27,19 +27,16 @@ void acquire_lock() {
 }
 
 
-// Liberar el lock, lock con 0
-
+// Liberar el lock
 void release_lock() {
     int key = 0;  // lock en 0 (libre)
     xchg(&lock, key);
 }
 
-// Sección crítica
 void seccion_critica(int id_hilo) {
-    printf("  → Hilo %d ejecutando SECCIÓN CRÍTICA\n", id_hilo);
-    printf("  → Hilo %d: contador = %d", id_hilo, contador);
+    printf("  -> Hilo %d ejecutando SECCIÓN CRÍTICA\n", id_hilo);
+    printf("  →` Hilo %d: contador = %d", id_hilo, contador);
     
-    // Simular operación que toma tiempo
     int temp = contador;
     usleep(80000); // 80ms
     contador = temp + 1;
@@ -53,17 +50,13 @@ void* proceso_protegido(void* arg) {
     
     printf("\nHilo %d: Intentando adquirir lock...\n", id);
     
-    // Adquirir lock usando XCHG
-    acquire_lock();
-    printf("Hilo %d: ✓ Lock ADQUIRIDO (usando XCHG)\n", id);
+    acquire_lock(); // Adquirir lock
+    printf("Hilo %d: Lock ADQUIRIDO (usando XCHG)\n", id);
     
-    // SECCIÓN CRÍTICA
     seccion_critica(id);
-    // FIN SECCIÓN CRÍTICA
     
-    // Liberar lock
-    release_lock();
-    printf("Hilo %d: ✓ Lock LIBERADO\n", id);
+    release_lock(); // Liberar lock
+    printf("Hilo %d: Lock LIBERADO\n", id);
     
     return NULL;
 }
