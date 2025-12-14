@@ -4,24 +4,17 @@
 #include <stdbool.h>
 #include <stdatomic.h>
 
-// Variable compartida
 int contador = 0;
-
-// Lock usando test-and-set
 atomic_bool lock = ATOMIC_VAR_INIT(false);
 
 // Implementación de Test-and-Set usando operaciones atómicas 
-// 1. Lee el valor actual del lock
-// 2. Lo establece en true
-// 3. Retorna el valor anterior
-
+// Retorna el valor previo de target y lo establece en true
 bool test_and_set(atomic_bool *target) {
     return atomic_exchange_explicit(target, true, memory_order_acquire);
 }
 
 
 // Mientras test_and_set retorne true (lock ocupado),
-// el proceso sigue intentando (espera activa/busy waiting)
 void acquire_lock() {
     while (test_and_set(&lock)) {
         // Espera activa
@@ -46,29 +39,21 @@ void seccion_critica(int id_hilo) {
     printf(" a %d\n", contador);
 }
 
-// Proceso con protección usando test-and-set
 void* proceso_protegido(void* arg) {
     int id = *(int*)arg;
     
     printf("\nHilo %d: Intentando adquirir el lock...\n", id);
     
-    // Adquirir lock usando test-and-set
-    acquire_lock();
+    acquire_lock(); // Adquirir lock
     printf("Hilo %d: Lock ADQUIRIDO\n", id);
     
-    // SECCIÓN CRÍTICA
     seccion_critica(id);
-    // FIN SECCIÓN CRÍTICA
     
-    // Liberar lock
-    release_lock();
+    release_lock(); // Liberar lock
     printf("Hilo %d: Lock LIBERADO\n", id);
     
     return NULL;
 }
-
-// Demostración visual del funcionamiento de test-and-set
-
 
 int main() {
     printf("\n");

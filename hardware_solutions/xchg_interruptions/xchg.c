@@ -4,17 +4,13 @@
 #include <stdbool.h>
 #include <stdatomic.h>
 
-// Variable compartida
 int contador = 0;
-
-// Lock usando XCHG
 atomic_int lock = ATOMIC_VAR_INIT(0);  // 0 = libre, 1 = ocupado
 
 // intercambia atómicamente el valor de target con value
 int xchg(atomic_int *target, int value) {
     return atomic_exchange_explicit(target, value, memory_order_acquire);
 }
-
 
 // Intenta intercambiar el lock con el valor 1 (ocupado)
 void acquire_lock() {
@@ -26,25 +22,23 @@ void acquire_lock() {
     }
 }
 
-
 // Liberar el lock
 void release_lock() {
-    int key = 0;  // lock en 0 (libre)
+    int key = 0; 
     xchg(&lock, key);
 }
 
 void seccion_critica(int id_hilo) {
     printf("  -> Hilo %d ejecutando SECCIÓN CRÍTICA\n", id_hilo);
-    printf("  →` Hilo %d: contador = %d", id_hilo, contador);
+    printf("  -> Hilo %d: contador = %d", id_hilo, contador);
     
     int temp = contador;
     usleep(80000); // 80ms
     contador = temp + 1;
     
-    printf(" → %d\n", contador);
+    printf("  -> %d\n", contador);
 }
 
-// Proceso con protección usando XCHG
 void* proceso_protegido(void* arg) {
     int id = *(int*)arg;
     
